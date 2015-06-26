@@ -13,7 +13,7 @@ var sp = {
 var fullResponse = {};
 var cppQuery = {};
 
-app.use('/', express.static(__dirname + '/html'));
+app.use('/', express.static(__dirname + '/gsa-travel/www'));
 
 app.get('/search', function(req, res) {
     var origin = req.query.origin;

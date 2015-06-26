@@ -1,0 +1,64 @@
+<ion-view view-title="GSA Travel">
+    <ion-content>
+        <form ng-submit="searchFormSubmit()">
+            <div class="list">
+                <label class="item item-input">
+                    <span class="input-label">I'm travelling to</span>
+                    <input type="text" ng-model="searchData.destination" placeholder="Tacoma, WA"></input>
+                </label>
+                <label class="item item-input">
+                    <span class="input-label">From</span>
+                    <input type="text" ng-model="searchData.origin" placeholder="Phoenix, AZ"></input>
+                </label>
+                <!--<label class="item item-input">
+                    <span class="input-label">Date</span>
+                    <input type="date" ng-model="searchData.date">
+                </label>-->
+                <label class="item item-input">
+                    <span class="input-label">Start Date</span>
+                    <ionic-datepicker idate="startDate" disablepreviousdates="true" callback="datePickerCallback">
+                        <button class="button button-block button-light"> {{ startDate | date:'MMMM dd yyyy' }} </button>
+                    </ionic-datepicker>
+                </label>
+                <label class="item item-input">
+                    <span class="input-label">End Date</span>
+                    <ionic-datepicker idate="endDate" disablepreviousdates="true" callback="datePickerCallback">
+                        <button class="button button-block button-light"> {{ endDate | date:'MMMM dd yyyy' }} </button>
+                    </ionic-datepicker>
+                </label>
+                <ul class="list">
+                    <li class="item item-toggle">
+                        Show City Pairs Flight Info
+                        <label class="toggle">
+                            <input type="checkbox" ng-model="searchData.showCP"></input>
+                            <div class="track">
+                                <div class="handle"></div>
+                            </div>
+                        </label>
+                    </li>
+                    <li class="item item-toggle">
+                        Show SmartPay Tax Info
+                        <label class="toggle">
+                            <input type="checkbox" ng-model="searchData.showSP"></input>
+                            <div class="track">
+                                <div class="handle"></div>
+                            </div>
+                        </label>
+                    </li>
+                    <li class="item item-toggle">
+                        Show Weather Info
+                        <label class="toggle">
+                            <input type="checkbox" ng-model="searchData.showWeather"></input>
+                            <div class="track">
+                                <div class="handle"></div>
+                            </div>
+                        </label>
+                    </li>
+                </ul>
+                <label class="item">
+                    <button class="button button-block button-positive" type="submit">Search</button>
+                </label>
+            </div>
+        </form>
+    </ion-content>
+</ion-view>
