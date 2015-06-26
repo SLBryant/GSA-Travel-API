@@ -6,7 +6,7 @@
 // 'starter.controllers' is found in controllers.js
 
 
-angular.module('gsa-travel', ['ionic', 'starter.controllers', 'ionic-datepicker'])
+angular.module('gsa-travel', ['ionic', 'starter.controllers', 'ionic-datepicker', 'ui.router'])
 
 
 .run(function($ionicPlatform) {
@@ -39,6 +39,15 @@ angular.module('gsa-travel', ['ionic', 'starter.controllers', 'ionic-datepicker'
                 'menuContent': {
                     templateUrl: "templates/search.html",
                     controller: 'SearchCtrl'
+                }
+            }
+        })
+        .state('app.results', {
+            url: "/results",
+            views: {
+                'menuContent': {
+                    templateUrl: "templates/results.html",
+                    controller: 'ResultsCtrl'
                 }
             }
         });

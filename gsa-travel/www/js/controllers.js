@@ -5,9 +5,9 @@ angular.module('starter.controllers', [])
 
 })
 
+//http://stackoverflow.com/questions/13882077/angularjs-passing-scope-between-routes
 
-
-.controller('SearchCtrl', function($scope,$http) {
+.controller('SearchCtrl', function($scope,$http,$state) {
     $scope.searchData = []
     $scope.searchData.showCP = true;
     $scope.searchData.showSP = true;
@@ -34,10 +34,18 @@ angular.module('starter.controllers', [])
             url: req
         }).
         success(function(data, status, headers, config) {
-            console.log(data)
+            apiResponse = data;
+            console.log(apiResponse)
+            $state.go('app.results');
         }).
         error(function(data, status, headers, config) {
             console.log(status)
         });
     }
+})
+
+.controller('ResultsCtrl', function($scope,$state) {
+
+
+
 });
