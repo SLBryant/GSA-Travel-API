@@ -2,7 +2,7 @@
   "name": "gsa-travel-api",
   "version": "0.1.0",
   "description": "Scrape responses from GSA CPP Service, GSA Per Diem API, and GSA SmartPay, Expose API",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
