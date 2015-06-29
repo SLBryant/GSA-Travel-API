@@ -1,12 +1,57 @@
 <ion-view view-title="Results">
-    <ion-content>
-        <div ng-repeat="cityPair in apiResponse.cityPairs">
-            <div class="card">
-                <div class="item item-divider">
-                    {{cityPair.origin.airport_code}}
+    <ion-content scroll="true">
+        <div class="row">
+            <div class="col">
+                <!--<div class="bar bar-header bar-calm">
+                    <h1 class="title">City Pairs: {{userSearch.response.cityPairs.length}}</h1>
+                </div>-->
+                <div ng-repeat="cityPair in userSearch.response.cityPairs">
+                    <div class="card">
+                        <div class="item item-divider">
+                            <i class="icon ion-plane"></i> {{cityPair.origin.airport_code}} to {{cityPair.destination.airport_code}}
+                        </div>
+                        <div class="item item-text-wrap">
+                            <div class="row">
+                                <div class="col bold">Airline</div>
+                                <div class="col">{{cityPair.airline.name}}</div>
+                            </div>
+                            <div class="row">
+                                <div class="col bold">YCA Fare</div>
+                                <div class="col">${{cityPair.yca_fare}}</div>
+                            </div>
+                            <div class="row">
+                                <div class="col bold">CA Fare</div>
+                                <div class="col">${{cityPair.ca_fare}}</div>
+                            </div>
+                            <div class="row" ng-show="cityPair.business_fare">
+                                <div class="col bold">Business Fare</div>
+                                <div class="col">${{cityPair.business_fare}}</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="item item-text-wrap">
-                    This is airport info
+                <div ng-repeat="perDiem in userSearch.response.perDiem">
+                    <div class="card">
+                        <div class="item item-divider">
+                            <i class="icon ion-cash"></i> Per Diem Rates for {{perDiem.city}}
+                        </div>
+                        <div class="item item-text-wrap">
+                             <div ng-repeat="month in perDiemCalculator.months()">
+                            <div class="row">
+                                <div class="col bold">Rate For {{perDiem.months.month[month].long}}</div>
+                                <div class="col">${{perDiem.months.month[month].value}}</div>
+                            </div>
+                        </div>
+                            <div class="row">
+                                <div class="col bold">M&amp;IE</div>
+                                <div class="col">${{perDiem.meals}}</div>
+                            </div>
+                            <!--<small>County: {{perDiem.county}}</small>-->
+                            <button class="button button-block button-positive">
+                                Calculate My Total Per Diem for this Trip
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

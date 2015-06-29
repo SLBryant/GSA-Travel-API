@@ -10,12 +10,14 @@ var pd = [];
 var sp = {
     'html': null,
 };
+var googleGeo = {};
 var fullResponse = {};
 var cppQuery = {};
 
 app.use('/', express.static(__dirname + '/gsa-travel/www'));
 
 app.get('/search', function(req, res) {
+    console.log('===========\n')
     var origin = req.query.origin;
     var destination = req.query.destination;
     console.log('googleGeocache', destination)
@@ -23,21 +25,22 @@ app.get('/search', function(req, res) {
     console.log('googleRequest', destinationReq)
     request(destinationReq, function(error, response, data) {
         if (!error && response.statusCode == 200) {
-            data = JSON.parse(data)
+            googleGeo.destination = JSON.parse(data);
+            data = googleGeo.destination;
             var formattedAddress = data.results[0].formatted_address;
-            formattedAddress = formattedAddress.replace(/ /g, '').split(',')
+            formattedAddress = formattedAddress.replace(/ /g, '').split(',');
             var cpMatches = [];
             for (i in cpCities) {
                 if (cpCities[i][0].toLowerCase().indexOf(formattedAddress[0].toLowerCase()) > -1 /*&& cpCities[i].indexOf(formattedAddress[1] > -1*/ ) {
                     cpMatches.push(cpCities[i][1]);
                 }
             }
-            console.log(cpMatches)
             cppQuery.destAPCode = cpMatches[0]
             var originReq = 'https://maps.googleapis.com/maps/api/geocode/json?address=' + origin;
             request(originReq, function(error, response, data) {
                 if (!error && response.statusCode == 200) {
-                    data = JSON.parse(data)
+                    googleGeo.origin = JSON.parse(data);
+                    data = googleGeo.origin;
                     var formattedAddress = data.results[0].formatted_address;
                     formattedAddress = formattedAddress.replace(/ /g, '').split(',')
                     var cpMatches = [];
@@ -46,7 +49,6 @@ app.get('/search', function(req, res) {
                             cpMatches.push(cpCities[i][1]);
                         }
                     }
-                    console.log(cpMatches)
                     cppQuery.originAPCode = cpMatches[0]
                     getCPP(cppQuery,res)
                 }
@@ -102,18 +104,28 @@ function getAwardDetails(i, res) {
                     if (value === '0') value = null;
                     if (label === 'origin' | label === 'destination') {
                         console.log(value)
-                        console.log(value.split('-'))
+                        //console.log(value.split('-'))
                         var locationInfo = value.split('-');
-                        value = {
+                        var locationInfoLength = locationInfo.length - 1;
+                        if(locationInfoLength === 3){
+                            value = {
                             'airport_code': locationInfo[2],
                             'airport_name': locationInfo[0],
                             'city': locationInfo[1].replace(',', ', ')
                         }
+                        }
+                        else{
+                            value = {
+                            'airport_code': locationInfo[1],
+                            'airport_name': locationInfo[0].replace(',', ', '),
+                            'city': locationInfo[0].replace(',', ', ')
+                        }
+                        }
 
                     }
                     if (label === 'airline') {
-                        console.log(value)
-                        console.log(value.split('-'))
+                        //console.log(value)
+                        //console.log(value.split('-'))
                         var airlineInfo = value.split('-');
                         value = {
                             'name': airlineInfo[0],
@@ -133,6 +145,7 @@ function getAwardDetails(i, res) {
 }
 
 function getLuggageRates(i, res) {
+    console.log('getLuggageRates\n')
     if (i < cpp.length) {
         request(cpp[i]['info_urls']['VCA'], function(error, response, html) {
             if (!error && response.statusCode == 200) {
@@ -158,52 +171,80 @@ function getLuggageRates(i, res) {
 }
 
 function getPerDiemRates(destination, res) {
-    console.log('googleGeocache', destination)
+    console.log('getPerDiemRates\n')
+    /*console.log('googleGeocache', destination)
     var req = 'https://maps.googleapis.com/maps/api/geocode/json?address=' + destination;
     request(req, function(error, response, data) {
-        if (!error && response.statusCode == 200) {
-            data = JSON.parse(data)
+        if (!error && response.statusCode == 200) {*/
+            //data = JSON.parse(data)
+            data = googleGeo.destination;
+            //console.log(data)
             var addressComponents = data.results[0].address_components;
+            console.log(addressComponents)
             for (i in addressComponents) {
                 if (addressComponents[i].types.indexOf('postal_code') > -1) {
                     var zip = addressComponents[i].short_name;
-                    console.log('getPerDiemRates', zip)
-                    request('http://m.gsa.gov/api/rs/perdiem/zip/' + zip + '/year/2015/', function(error, response, json) {
-                        if (!error && response.statusCode == 200) {
-                            pd = JSON.parse(json).rates[0].rate;
-                            fullResponse.perDiem = pd;
-                            //res.json(fullResponse);
-                            for (i in addressComponents) {
-
-                                if (addressComponents[i].types.indexOf('administrative_area_level_1') > -1) {
-                                    var state = addressComponents[i].long_name.toLowerCase();
-                                    console.log('getSmartPay', state)
-                                    request('https://smartpay.gsa.gov/program-coordinators/tax-information/' + state + '?mobile=1', function(error, response, html) {
-                                        if (!error && response.statusCode == 200) {
-                                            console.log(html)
-                                            var $ = cheerio.load(html);
-                                            $('img').remove();
-                                            var smartPay = $('#mainBody').html().replace(/\t/g, '').replace(/\s\s+/g, ' ').replace(/<!--(.*?)-->/g, '');
-                                            console.log(smartPay)
-                                            sp.html = smartPay;
-                                            fullResponse.smartPay = sp;
-                                        } else {
-                                            console.log('smartpay failed')
-                                        }
-                                        res.json(fullResponse);
-                                        console.log('returned JSON')
-                                    })
-                                }
-                            }
-
-                        }
-                    })
-
                 }
             }
-        }
+            if(zip){
+                console.log(zip)
+                var req = 'http://m.gsa.gov/api/rs/perdiem/zip/' + zip + '/year/2015/'
+            }
+            else{
+                console.log('no zip')
+                for (i in addressComponents) {
+                    console.log('looping address components',addressComponents[i].types)
+                    if (addressComponents[i].types.indexOf('administrative_area_level_1') > -1) {
+                        console.log('administrative_area_level_1')
+                        var state = addressComponents[i].short_name;
+                    }
+                    if (addressComponents[i].types.indexOf('locality') > -1) {
+                        var city = addressComponents[i].long_name;
+                    }
+                }
+                console.log(city,state)
+                if(city){
+                    var req = 'http://m.gsa.gov/api/rs/perdiem/city/' + city + '/state/' + state + '/year/2015/'
+                }
+                else{
+                    var req = 'http://m.gsa.gov/api/rs/perdiem/state/' + state + '/year/2015/'
+                }
+                
+            }
+            console.log('getPerDiemRates', zip, city, state, '\n')
+            request(req, function(error, response, json) {
+                if (!error && response.statusCode == 200) {
+                    pd = JSON.parse(json).rates[0].rate;
+                    fullResponse.perDiem = pd;
+                    //res.json(fullResponse);
+                    /*for (i in addressComponents) {
 
-    })
+                        if (addressComponents[i].types.indexOf('administrative_area_level_1') > -1) {
+                            var state = addressComponents[i].long_name.toLowerCase();*/
+                            console.log('getSmartPay', state)
+                            request('https://smartpay.gsa.gov/program-coordinators/tax-information/' + state + '?mobile=1', function(error, response, html) {
+                                if (!error && response.statusCode == 200) {
+                                    console.log(html)
+                                    var $ = cheerio.load(html);
+                                    $('img').remove();
+                                    var smartPay = $('#mainBody').html().replace(/\t/g, '').replace(/\s\s+/g, ' ').replace(/<!--(.*?)-->/g, '');
+                                    console.log(smartPay)
+                                    sp.html = smartPay;
+                                    fullResponse.smartPay = sp;
+                                } else {
+                                    console.log('smartpay failed')
+                                }
+                                res.json(fullResponse);
+                                console.log('returned JSON')
+                            })
+                        //}
+                    //}
+
+                }
+            })
+        //}
+
+    //})
 }
 
 var cpCities = [
